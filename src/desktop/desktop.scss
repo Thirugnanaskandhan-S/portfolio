@@ -7,7 +7,7 @@
   min-height: 100dvh;
   width: 100%;
   background-color: #245edc;
-  background-image: url('/assets/windows-xp-wallpaper.webp');
+  background-image: var(--desktop-wallpaper);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
