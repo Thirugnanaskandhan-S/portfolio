@@ -1,0 +1,13 @@
+<button
+  type="button"
+  class="desk-icon"
+  [class.desk-icon--selected]="selected()"
+  [attr.aria-label]="label()"
+  [attr.aria-pressed]="selected()"
+  (keydown)="onKeyActivate($event)"
+>
+  <span class="desk-icon__frame">
+    <img class="desk-icon__img" [src]="iconSrc()" alt="" draggable="false" />
+  </span>
+  <span class="desk-icon__label">{{ label() }}</span>
+</button>

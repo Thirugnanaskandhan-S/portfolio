@@ -1,0 +1,446 @@
+:host {
+  display: block;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.taskbar {
+  height: 100%;
+  width: 100%;
+  background-color: #252525;
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0 6px 0 0;
+}
+
+.taskbar-tasks {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 0 4px 0 2px;
+}
+
+.taskbar-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  max-width: min(240px, 28vw);
+  min-height: 0;
+  margin: 0;
+  padding: 0 10px 0 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #f3f3f3;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+}
+
+.taskbar-task::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: #60cdff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.taskbar-task:not(.taskbar-task--minimized)::after {
+  opacity: 0.95;
+}
+
+.taskbar-task--minimized::after {
+  opacity: 0.45;
+  height: 2px;
+  bottom: 0;
+}
+
+.taskbar-task::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  pointer-events: none;
+}
+
+.taskbar-task:hover::before,
+.taskbar-task:focus-visible::before {
+  opacity: 1;
+}
+
+.taskbar-task:focus-visible {
+  outline: 2px solid #c4c4c4;
+  outline-offset: -2px;
+}
+
+.taskbar-task__icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.taskbar-task__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.taskbar-spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.taskbar-start {
+  position: relative;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 1.3cm;
+  min-width: 1.3cm;
+  max-width: 1.3cm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+
+.taskbar-start::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.14);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.taskbar-start:hover::before,
+.taskbar-start:focus-visible::before {
+  opacity: 1;
+}
+
+.taskbar-start:focus-visible {
+  outline: 2px solid #c4c4c4;
+  outline-offset: -2px;
+}
+
+.taskbar-start__icons {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+
+.taskbar-start__icon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.taskbar-start__icon--color {
+  opacity: 0;
+}
+
+.taskbar-start:hover .taskbar-start__icon--light,
+.taskbar-start:focus-visible .taskbar-start__icon--light {
+  opacity: 0;
+}
+
+.taskbar-start:hover .taskbar-start__icon--color,
+.taskbar-start:focus-visible .taskbar-start__icon--color {
+  opacity: 1;
+}
+
+.taskbar-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 8px 2px 12px;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: #f3f3f3;
+  text-align: center;
+  user-select: none;
+  cursor: default;
+}
+
+.taskbar-clock__time,
+.taskbar-clock__date {
+  font-variant-numeric: tabular-nums;
+}
+
+.taskbar-clock__time {
+  font-weight: 400;
+}
+
+.taskbar-clock__date {
+  font-weight: 400;
+  opacity: 0.95;
+}
+
+/* Dark / light theme toggle (beside Start); styles scoped — no global body/:root hacks */
+.taskbar-theme-switch {
+  --hue: 223;
+  --trans-dur: 0.4s;
+  --trans-timing: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Unchecked (“off”) only: track + sun strokes */
+  --switch-off-surface: #ffffc5;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  padding: 0 4px 0 0;
+  /* Scales track (3em × 1.5em), thumb, and icon together */
+  font-size: 18px;
+  -webkit-tap-highlight-color: transparent;
+
+  .switch,
+  .switch__input {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Tight wrapper: icon layers use position:absolute and must align to the track, not flex layout */
+  .switch {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
+    width: 3em;
+    height: 1.5em;
+    line-height: 0;
+    cursor: pointer;
+  }
+
+  /* Track only — no input::before (extra disc; some UAs draw checkboxes + ::before badly) */
+  .switch__input {
+    position: relative;
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0.75em;
+    cursor: pointer;
+    background-color: var(--switch-off-surface);
+    background-image: none;
+    transition: background-color var(--trans-dur) var(--trans-timing);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    accent-color: transparent;
+    font: inherit;
+  }
+
+  .switch__icon,
+  .switch__icon-part {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .switch__icon {
+    z-index: 1;
+    /* Sun (off): black knob; moon (on) overridden below */
+    background-color: #000;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
+    top: 0.125em;
+    left: 0.125em;
+    width: 1.25em;
+    height: 1.25em;
+    transition:
+      transform var(--trans-dur) var(--trans-timing),
+      background-color var(--trans-dur) var(--trans-timing);
+  }
+
+  .switch__icon-part {
+    transition:
+      box-shadow var(--trans-dur) var(--trans-timing),
+      transform var(--trans-dur) var(--trans-timing),
+      background-color var(--trans-dur) var(--trans-timing);
+  }
+
+  .switch__icon-part--1,
+  .switch__icon-part--2,
+  .switch__icon-part--3 {
+    border-radius: 50%;
+  }
+
+  /* Inner sun disc (was light gray); off state only — moon restores below */
+  .switch__icon-part--1 {
+    background-color: #000;
+    top: calc(50% - 0.375em);
+    left: calc(50% - 0.375em);
+    width: 0.75em;
+    height: 0.75em;
+  }
+
+  .switch__icon-part--2 {
+    background-color: var(--switch-off-surface);
+    top: calc(50% - 0.4375em);
+    left: calc(50% - 0.0625em);
+    width: 0.5em;
+    height: 0.5em;
+    transform: translate(-0.1875em, 0.1875em) scale(0.2);
+  }
+
+  .switch__icon-part--3 {
+    box-shadow: 0 0 0 0.625em var(--switch-off-surface) inset;
+    width: 1.25em;
+    height: 1.25em;
+    transform: scale(0.25);
+  }
+
+  .switch__icon-part--3 ~ .switch__icon-part {
+    background-color: var(--switch-off-surface);
+    border-radius: 0.0625em;
+    top: 50%;
+    left: 50%;
+    width: 0.125em;
+    height: 0.1875em;
+    transform-origin: 50% 0;
+  }
+
+  .switch__icon-part--4 {
+    transform: translateX(-50%) rotate(0) translateY(0.25em);
+  }
+
+  .switch__icon-part--5 {
+    transform: translateX(-50%) rotate(45deg) translateY(0.25em);
+  }
+
+  .switch__icon-part--6 {
+    transform: translateX(-50%) rotate(90deg) translateY(0.25em);
+  }
+
+  .switch__icon-part--7 {
+    transform: translateX(-50%) rotate(135deg) translateY(0.25em);
+  }
+
+  .switch__icon-part--8 {
+    transform: translateX(-50%) rotate(180deg) translateY(0.25em);
+  }
+
+  .switch__icon-part--9 {
+    transform: translateX(-50%) rotate(225deg) translateY(0.25em);
+  }
+
+  .switch__icon-part--10 {
+    transform: translateX(-50%) rotate(270deg) translateY(0.25em);
+  }
+
+  .switch__icon-part--11 {
+    transform: translateX(-50%) rotate(315deg) translateY(0.25em);
+  }
+
+  .switch__sr {
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .switch__input:checked {
+    background-color: hsl(var(--hue), 10%, 90%);
+  }
+
+  .switch__input:checked ~ .switch__icon {
+    transform: translateX(1.5em);
+    background-color: hsl(var(--hue), 10%, 90%);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--1 {
+    background-color: hsl(var(--hue), 10%, 90%);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--2 {
+    background-color: hsl(var(--hue), 10%, 10%);
+    transform: translate(0, 0) scale(1);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--3 {
+    box-shadow: 0 0 0 0.25em hsl(var(--hue), 10%, 10%) inset;
+    transform: scale(1);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--4 {
+    transform: translateX(-50%) rotate(0) translateY(0.625em) scale(0);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--5 {
+    transform: translateX(-50%) rotate(45deg) translateY(0.625em) scale(0);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--6 {
+    transform: translateX(-50%) rotate(90deg) translateY(0.625em) scale(0);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--7 {
+    transform: translateX(-50%) rotate(135deg) translateY(0.625em) scale(0);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--8 {
+    transform: translateX(-50%) rotate(180deg) translateY(0.625em) scale(0);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--9 {
+    transform: translateX(-50%) rotate(225deg) translateY(0.625em) scale(0);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--10 {
+    transform: translateX(-50%) rotate(270deg) translateY(0.625em) scale(0);
+  }
+
+  .switch__input:checked ~ .switch__icon .switch__icon-part--11 {
+    transform: translateX(-50%) rotate(315deg) translateY(0.625em) scale(0);
+  }
+}

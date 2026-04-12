@@ -3,12 +3,75 @@
 }
 
 .desktop {
+  position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
+}
+
+.desktop-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   background-color: #245edc;
-  background-image: var(--desktop-wallpaper);
+  overflow: hidden;
+}
+
+.desktop-wallpaper-layer {
+  position: absolute;
+  inset: 0;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.desktop-wallpaper-layer--base {
+  z-index: 0;
+}
+
+.desktop-wallpaper-layer--reveal {
+  z-index: 1;
+  /* --reveal-x / --reveal-y set from toggle position (viewport → % of backdrop) */
+  clip-path: circle(0% at var(--reveal-x, 50%) var(--reveal-y, 50%));
+  -webkit-clip-path: circle(0% at var(--reveal-x, 50%) var(--reveal-y, 50%));
+  transition:
+    clip-path 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+    -webkit-clip-path 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: clip-path;
+  pointer-events: none;
+}
+
+.desktop-wallpaper-layer--reveal.desktop-wallpaper-layer--reveal-open {
+  clip-path: circle(150% at var(--reveal-x, 50%) var(--reveal-y, 50%));
+  -webkit-clip-path: circle(150% at var(--reveal-x, 50%) var(--reveal-y, 50%));
+}
+
+.desktop-surface {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 8px 8px 48px;
+}
+
+.desktop-icons {
+  position: relative;
+  width: 100%;
+  min-height: calc(100dvh - 48px - 16px);
+  min-height: calc(100vh - 48px - 16px);
+}
+
+.desktop-icon-slot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  touch-action: none;
+
+  &--ghosting {
+    opacity: 0.32;
+    filter: saturate(0.85);
+    pointer-events: none;
+  }
 }

@@ -1,0 +1,47 @@
+<div
+  #win
+  class="os-window"
+  [class.os-window--maximized]="maximized()"
+  [class.os-window--has-pixel-pos]="positionReady() && !maximized()"
+  [class.os-window--title-drag]="titleDragging()"
+  [style.left.px]="winLeftPx()"
+  [style.top.px]="winTopPx()"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="osw-title"
+>
+  <div
+    class="os-window__titlebar"
+    (dblclick)="onTitleBarDblClick($event)"
+    (pointerdown)="onTitleBarPointerDown($event)"
+  >
+    <span class="os-window__title" id="osw-title">{{ title() }}</span>
+    <div class="os-window__controls">
+      <button
+        type="button"
+        class="os-window__btn os-window__btn--min"
+        aria-label="Minimize"
+        (click)="windowMinimize.emit()"
+      ></button>
+      <button
+        type="button"
+        class="os-window__btn os-window__btn--max"
+        [attr.aria-label]="maximized() ? 'Restore' : 'Maximize'"
+        (click)="windowToggleMax.emit()"
+      ></button>
+      <button
+        type="button"
+        class="os-window__btn os-window__btn--close"
+        aria-label="Close"
+        (click)="windowClose.emit()"
+      ></button>
+    </div>
+  </div>
+  <div class="os-window__body">
+    <iframe
+      class="os-window__frame"
+      [src]="safeSrc()"
+      title="Document viewer"
+    ></iframe>
+  </div>
+</div>

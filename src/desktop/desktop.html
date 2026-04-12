@@ -1,1 +1,53 @@
-<div class="desktop" role="presentation" aria-hidden="true"></div>
+<div class="desktop">
+  <div class="desktop-backdrop" #backdrop role="presentation" aria-hidden="true">
+    <div class="desktop-wallpaper-layer desktop-wallpaper-layer--base" [style.background-image]="baseWallpaper()"></div>
+    @if (revealWallpaper(); as reveal) {
+      <div
+        class="desktop-wallpaper-layer desktop-wallpaper-layer--reveal"
+        [class.desktop-wallpaper-layer--reveal-open]="revealExpand()"
+        [style.background-image]="reveal"
+        [style.--reveal-x.%]="revealOriginXPct()"
+        [style.--reveal-y.%]="revealOriginYPct()"
+        (transitionend)="onWallpaperRevealEnd($event)"
+      ></div>
+    }
+  </div>
+  <div class="desktop-surface" #surface>
+    <div class="desktop-icons">
+      @for (v of variants; track v) {
+        <div
+          class="desktop-icon-slot"
+          [class.desktop-icon-slot--ghosting]="draggingVariant() === v"
+          [style.left.px]="iconLeft(v)"
+          [style.top.px]="iconTop(v)"
+          (mousedown)="$event.stopPropagation()"
+          (pointerdown)="onIconPointerDown(v, $event)"
+          (dblclick)="onSlotDblClick(v, $event)"
+        >
+          <app-desktop-icon
+            [variant]="v"
+            [label]="labels[v]"
+            [selected]="selectedVariant() === v"
+            (selectedChange)="onKeyboardSelect(v)"
+          />
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (resumeWindow().open && !resumeWindow().minimized) {
+    <app-os-window
+      [title]="pdfViewerTitle"
+      [src]="resumePdfSrc"
+      [maximized]="resumeWindow().maximized"
+      (windowClose)="closeResumeWindow()"
+      (windowMinimize)="minimizeResumeWindow()"
+      (windowToggleMax)="toggleResumeMaximize()"
+    />
+  }
+  <app-taskbar
+    [tasks]="taskbarTasks()"
+    (taskActivate)="onTaskbarTaskActivate($event)"
+    (darkModeChange)="onDarkModeChange($event)"
+  />
+</div>

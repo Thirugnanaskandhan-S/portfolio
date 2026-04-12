@@ -1,0 +1,84 @@
+:host {
+  display: block;
+  width: fit-content;
+}
+
+.desk-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5px;
+  width: 1.95cm;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: default;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  color: #fff;
+  text-align: center;
+}
+
+.desk-icon__frame {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85cm;
+  height: 1.5cm;
+  flex-shrink: 0;
+}
+
+.desk-icon__img {
+  display: block;
+  max-width: 1.15cm;
+  max-height: 1.15cm;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.desk-icon__label {
+  display: block;
+  max-width: 1.85cm;
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.95),
+    1px 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.desk-icon:hover:not(.desk-icon--selected) {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.desk-icon--selected {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.06)),
+    rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.desk-icon:focus-visible {
+  outline: none;
+}
+
+.desk-icon:focus-visible:not(.desk-icon--selected) {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.desk-icon--selected:focus-visible {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.28);
+}

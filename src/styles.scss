@@ -1,12 +1,64 @@
 /* You can add global styles to this file, and also import other style files */
 
+@font-face {
+  font-family: 'Segoe UI This';
+  src: url('assets/segoeuithis.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 html,
 body {
   margin: 0;
   height: 100%;
+  font-family: 'Segoe UI This', 'Segoe UI', system-ui, sans-serif;
 }
 
 app-root {
   display: block;
   min-height: 100%;
+  font-family: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* Drag ghost is appended to document.body (outside component views). */
+.desktop-icon-ghost {
+  position: fixed;
+  z-index: 2147483646;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5px;
+  width: 1.95cm;
+  opacity: 0.42;
+  font-family: inherit;
+}
+
+.desktop-icon-ghost__img {
+  display: block;
+  max-width: 1.15cm;
+  max-height: 1.15cm;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.desktop-icon-ghost__label {
+  max-width: 1.85cm;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  color: #fff;
+  text-align: center;
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.95),
+    1px 1px 2px rgba(0, 0, 0, 0.85);
 }

@@ -1,0 +1,69 @@
+<nav class="taskbar" aria-label="Taskbar">
+  <button type="button" class="taskbar-start" aria-label="Start">
+    <span class="taskbar-start__icons">
+      <img
+        class="taskbar-start__icon taskbar-start__icon--light"
+        src="assets/start-white.svg"
+        alt=""
+        width="26"
+        height="26"
+        draggable="false"
+      />
+      <img
+        class="taskbar-start__icon taskbar-start__icon--color"
+        src="assets/start-color.svg"
+        alt=""
+        width="26"
+        height="26"
+        draggable="false"
+      />
+    </span>
+  </button>
+  <div class="taskbar-theme-switch">
+    <label class="switch">
+      <input
+        class="switch__input"
+        type="checkbox"
+        role="switch"
+        (change)="onThemeToggle($event)"
+      />
+      <span class="switch__icon" aria-hidden="true">
+        <span class="switch__icon-part switch__icon-part--1"></span>
+        <span class="switch__icon-part switch__icon-part--2"></span>
+        <span class="switch__icon-part switch__icon-part--3"></span>
+        <span class="switch__icon-part switch__icon-part--4"></span>
+        <span class="switch__icon-part switch__icon-part--5"></span>
+        <span class="switch__icon-part switch__icon-part--6"></span>
+        <span class="switch__icon-part switch__icon-part--7"></span>
+        <span class="switch__icon-part switch__icon-part--8"></span>
+        <span class="switch__icon-part switch__icon-part--9"></span>
+        <span class="switch__icon-part switch__icon-part--10"></span>
+        <span class="switch__icon-part switch__icon-part--11"></span>
+      </span>
+      <span class="switch__sr">Dark Mode</span>
+    </label>
+  </div>
+  <div class="taskbar-tasks" role="toolbar" aria-label="Open windows">
+    @for (t of tasks(); track t.id) {
+      <button
+        type="button"
+        class="taskbar-task"
+        [class.taskbar-task--minimized]="t.minimized"
+        [attr.aria-label]="t.title + (t.minimized ? ', minimized' : '')"
+        (click)="taskActivate.emit(t.id)"
+      >
+        <img class="taskbar-task__icon" [src]="t.iconSrc" alt="" width="20" height="20" draggable="false" />
+        <span class="taskbar-task__title">{{ t.title }}</span>
+      </button>
+    }
+  </div>
+  <div class="taskbar-spacer" aria-hidden="true"></div>
+  <div
+    class="taskbar-clock"
+    aria-live="polite"
+    [attr.aria-label]="'India Standard Time, ' + clockTime() + ', ' + clockDate()"
+  >
+    <span class="taskbar-clock__time">{{ clockTime() }}</span>
+    <span class="taskbar-clock__date">{{ clockDate() }}</span>
+  </div>
+</nav>
