@@ -1,0 +1,114 @@
+:host {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.explorer-details-table {
+  height: 100%;
+  overflow: auto;
+  background: #202020;
+}
+
+.explorer-details-table__grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.explorer-details-table__col-shrink {
+  width: 0.01%;
+}
+
+.explorer-details-table__tbody {
+  transition: none;
+}
+
+.explorer-details-table__tbody--refresh-flash {
+  opacity: 0;
+}
+
+.explorer-details-table__grid thead {
+  background: #202020;
+}
+
+.explorer-details-table__grid th {
+  text-align: left;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  color: #e8e8e8;
+  padding: 6px 10px;
+  background: #202020;
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+  transition: background-color 0.1s ease;
+}
+
+.explorer-details-table__grid th:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.explorer-details-table__grid th:last-child {
+  border-right: none;
+}
+
+.explorer-details-table__grid th.explorer-details-table__col--shrink,
+.explorer-details-table__grid td.explorer-details-table__col--shrink {
+  white-space: nowrap;
+  padding-right: 12px;
+}
+
+.explorer-details-table__row {
+  cursor: default;
+  background: #202020;
+  transition: background-color 0.1s ease;
+}
+
+.explorer-details-table__row:hover,
+.explorer-details-table__row:focus-within {
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+.explorer-details-table__grid td {
+  padding: 6px 10px;
+  color: #e0e0e0;
+  vertical-align: middle;
+  background: transparent;
+  border-right: none;
+}
+
+.explorer-details-table__cell-name {
+  display: table-cell;
+}
+
+.explorer-details-table__item-icon {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.explorer-details-table__item-icon img {
+  display: block;
+}
+
+.explorer-details-table__item-label {
+  vertical-align: middle;
+}
+
+.explorer-details-table__cell-date {
+  font-variant-numeric: tabular-nums;
+}
+
+.explorer-details-table__empty-msg {
+  padding: 12px 10px;
+  color: #9a9a9a;
+  font-style: italic;
+  text-align: center;
+}
+
+.explorer-details-table__row--empty:hover,
+.explorer-details-table__row--empty:focus,
+.explorer-details-table__row--empty:focus-within {
+  background: #202020;
+}

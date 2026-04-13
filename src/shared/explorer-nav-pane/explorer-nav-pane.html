@@ -1,0 +1,45 @@
+<aside class="explorer-nav-pane" aria-label="Navigation pane">
+  <nav class="explorer-nav-pane__tree" role="tree" aria-label="Folders">
+    <div class="explorer-nav-pane__group" role="presentation">
+      <div
+        class="explorer-nav-pane__root"
+        [class.explorer-nav-pane__row--selected]="isRootSelected()"
+      >
+        <button
+          type="button"
+          class="explorer-nav-pane__chevron-btn"
+          [attr.aria-expanded]="expanded()"
+          [attr.aria-controls]="expanded() ? childListDomId() : null"
+          title="Expand or collapse"
+          (click)="toggleExpanded(); $event.stopPropagation()"
+        >
+          <span
+            class="explorer-nav-pane__chevron"
+            [class.explorer-nav-pane__chevron--open]="expanded()"
+            aria-hidden="true"
+          ></span>
+        </button>
+        <button type="button" class="explorer-nav-pane__label-btn" (click)="select(rootId())">
+          {{ rootLabel() }}
+        </button>
+      </div>
+      @if (expanded()) {
+        <ul [id]="childListDomId()" class="explorer-nav-pane__children" role="group">
+          @for (node of nodes(); track node.id) {
+            <li role="none">
+              <button
+                type="button"
+                class="explorer-nav-pane__child"
+                [class.explorer-nav-pane__row--selected]="isChildSelected(node.id)"
+                (click)="select(node.id)"
+              >
+                <span class="explorer-nav-pane__child-glyph" aria-hidden="true">›</span>
+                <span class="explorer-nav-pane__child-label">{{ node.label }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </nav>
+</aside>

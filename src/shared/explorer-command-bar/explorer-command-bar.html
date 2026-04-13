@@ -1,0 +1,47 @@
+<div class="explorer-bar" role="toolbar" aria-label="Explorer navigation">
+  <div class="explorer-bar__nav" aria-hidden="true">
+    <span class="explorer-bar__icon-slot">
+      <img [src]="iconBackward" alt="" width="16" height="16" draggable="false" />
+    </span>
+    <span class="explorer-bar__icon-slot">
+      <img [src]="iconForward" alt="" width="16" height="16" draggable="false" />
+    </span>
+    <span class="explorer-bar__icon-slot">
+      <img [src]="iconUp" alt="" width="16" height="16" draggable="false" />
+    </span>
+  </div>
+  <div class="explorer-bar__address" role="group" aria-label="Current location">
+    <div class="explorer-bar__field explorer-bar__field--address">
+      <span class="explorer-bar__icon-slot explorer-bar__icon-slot--in-field">
+        <img [src]="iconThisPc" alt="" width="16" height="16" draggable="false" />
+      </span>
+      <span class="explorer-bar__address-text">My PC</span>
+      <button
+        type="button"
+        class="explorer-bar__icon-btn explorer-bar__icon-slot explorer-bar__icon-slot--in-field"
+        aria-label="Refresh"
+        (click)="retryClick.emit()"
+      >
+        <img [src]="iconRetry" alt="" width="14" height="14" draggable="false" />
+      </button>
+    </div>
+  </div>
+  <div class="explorer-bar__search" role="search">
+    <div class="explorer-bar__field explorer-bar__field--search">
+      <input
+        type="search"
+        class="explorer-bar__search-input"
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+        (keydown.escape)="searchQuery.set('')"
+        placeholder="Search"
+        aria-label="Search This PC"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <span class="explorer-bar__icon-slot explorer-bar__icon-slot--in-field" aria-hidden="true">
+        <img [src]="iconMagnifier" alt="" width="14" height="14" draggable="false" />
+      </span>
+    </div>
+  </div>
+</div>

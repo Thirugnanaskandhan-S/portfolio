@@ -1,0 +1,139 @@
+.window-chrome {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.window-chrome__titlebar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 0 0 12px;
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.window-chrome__titlebar--maximized {
+  cursor: default;
+}
+
+.window-chrome__title-cluster {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.window-chrome__title-icon {
+  flex-shrink: 0;
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.window-chrome__title {
+  flex: 1;
+  min-width: 0;
+  align-self: center;
+  font-size: 12px;
+  line-height: 1.3;
+  color: #e8e8e8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.window-chrome__controls {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  margin-right: 0;
+}
+
+.window-chrome__btn {
+  width: 46px;
+  min-height: 32px;
+  padding: 0;
+  align-self: stretch;
+  border: none;
+  background: transparent;
+  cursor: default;
+  position: relative;
+  color: #e0e0e0;
+}
+
+.window-chrome__btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.window-chrome__btn--close:hover {
+  background: #e81123;
+  color: #fff;
+}
+
+.window-chrome__btn--min::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.window-chrome__btn--max::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border: 1px solid currentColor;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+}
+
+.window-chrome__btn--close::before,
+.window-chrome__btn--close::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: currentColor;
+}
+
+.window-chrome__btn--close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.window-chrome__btn--close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.window-chrome__subheader {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+}
+
+.window-chrome__subheader--hidden {
+  display: none;
+  border-bottom: none;
+}

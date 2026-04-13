@@ -14,11 +14,13 @@ import {
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
+import { WindowChrome } from '../window-chrome/window-chrome';
+
 const VIEW_PAD = 4;
 
 @Component({
   selector: 'app-os-window',
-  imports: [],
+  imports: [WindowChrome],
   templateUrl: './os-window.html',
   styleUrl: './os-window.scss',
 })
@@ -29,8 +31,14 @@ export class OsWindow {
   private readonly winEl = viewChild<ElementRef<HTMLElement>>('win');
 
   title = input.required<string>();
-  /** App-relative asset URL (e.g. PDF under `assets/`). */
-  src = input.required<string>();
+  /** Optional icon shown before the title (app-relative asset URL, e.g. `assets/this-pc.png`). */
+  titleIcon = input<string | undefined>(undefined);
+  /** When `true`, render a subheader row from projected `[appWindowSubheader]` content. */
+  subheader = input(false);
+  /** When `true`, body is an iframe with {@link src}. When `false`, projected content (`ng-content`). */
+  useIframe = input(true);
+  /** App-relative URL for the iframe (PDF, etc.). Ignored when `useIframe` is `false`. */
+  src = input<string | undefined>(undefined);
   maximized = input(false);
 
   windowClose = output<void>();
@@ -46,9 +54,10 @@ export class OsWindow {
   /** Position before last maximize; restored when un-maximizing. */
   private preMaxPos: { x: number; y: number } | null = null;
 
-  protected readonly safeSrc = computed(() =>
-    this.sanitizer.bypassSecurityTrustResourceUrl(this.src()),
-  );
+  protected readonly safeSrc = computed(() => {
+    const u = this.src();
+    return this.sanitizer.bypassSecurityTrustResourceUrl(u ?? 'about:blank');
+  });
 
   protected readonly winLeftPx = computed(() => {
     if (this.maximized() || !this.positionReady()) return null;
@@ -86,7 +95,7 @@ export class OsWindow {
   }
 
   onTitleBarDblClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).closest('.os-window__controls')) return;
+    if ((event.target as HTMLElement).closest('.window-chrome__controls')) return;
     this.windowToggleMax.emit();
   }
 
@@ -95,7 +104,7 @@ export class OsWindow {
     if (this.maximized()) return;
     if (event.button !== 0) return;
     const t = event.target as HTMLElement | null;
-    if (t?.closest('.os-window__controls')) return;
+    if (t?.closest('.window-chrome__controls')) return;
 
     event.preventDefault();
 
@@ -109,7 +118,7 @@ export class OsWindow {
 
     this.titleDragging.set(true);
 
-    const titlebar = t?.closest('.os-window__titlebar') as HTMLElement | null;
+    const titlebar = t?.closest('.window-chrome__titlebar') as HTMLElement | null;
     if (titlebar) {
       try {
         titlebar.setPointerCapture(event.pointerId);

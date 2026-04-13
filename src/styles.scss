@@ -15,6 +15,31 @@ body {
   font-family: 'Segoe UI This', 'Segoe UI', system-ui, sans-serif;
 }
 
+/* Hide scrollbars app-wide; scrolling still works where overflow allows. */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+body::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 app-root {
   display: block;
   min-height: 100%;

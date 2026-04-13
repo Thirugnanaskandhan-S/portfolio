@@ -62,12 +62,22 @@
   min-height: calc(100vh - 48px - 16px);
 }
 
+.desktop-marquee {
+  position: absolute;
+  z-index: 3;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 120, 215, 0.95);
+  background: rgba(0, 120, 215, 0.18);
+  pointer-events: none;
+}
+
 .desktop-icon-slot {
   position: absolute;
   left: 0;
   top: 0;
   z-index: 2;
   touch-action: none;
+  user-select: none;
 
   &--ghosting {
     opacity: 0.32;

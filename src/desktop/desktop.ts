@@ -16,8 +16,10 @@ import {
   type DesktopIconVariant,
   desktopIconAssetPath,
 } from '../shared/desktop-icon/desktop-icon';
+import { ExplorerCommandBar } from '../shared/explorer-command-bar/explorer-command-bar';
 import { OsWindow } from '../shared/os-window/os-window';
 import { Taskbar, type DarkModeChangeDetail, type TaskbarTaskItem } from '../shared/taskbar/taskbar';
+import { ThisPc } from '../this-pc/this-pc';
 
 const RESUME_PDF_SRC = 'assets/Resume.pdf';
 
@@ -28,7 +30,12 @@ const DESKTOP_WALLPAPER_NIGHT = 'url(assets/windows-xp-night.png)';
 /** Window chrome + taskbar label for the in-app PDF viewer (app name — file name). */
 const PDF_VIEWER_TITLE = 'File Engine - Resume.pdf';
 
+const THIS_PC_WINDOW_TITLE = 'This PC';
+const THIS_PC_TITLE_ICON = 'assets/this-pc.png';
+
 const DRAG_THRESHOLD_PX = 5;
+/** Below this size, marquee mouseup is treated as a click (clear selection). */
+const MARQUEE_CLICK_MAX_PX = 4;
 
 function cmToPx(cm: number, anchor: HTMLElement): number {
   const probe = document.createElement('div');
@@ -45,7 +52,7 @@ function cmToPx(cm: number, anchor: HTMLElement): number {
 
 @Component({
   selector: 'app-desktop',
-  imports: [DesktopIcon, OsWindow, Taskbar],
+  imports: [DesktopIcon, ExplorerCommandBar, OsWindow, Taskbar, ThisPc],
   templateUrl: './desktop.html',
   styleUrl: './desktop.scss',
 })
@@ -79,11 +86,36 @@ export class Desktop implements OnDestroy {
     'my-projects': 'My Projects',
   };
 
-  protected readonly selectedVariant = signal<DesktopIconVariant | null>(null);
-  protected readonly draggingVariant = signal<DesktopIconVariant | null>(null);
+  protected readonly selectedVariants = signal<DesktopIconVariant[]>([]);
+  protected readonly draggingVariants = signal<DesktopIconVariant[]>([]);
+
+  /** Rubber-band rect in `.desktop-icons` coordinates (px). */
+  protected readonly marqueeRect = signal<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  } | null>(null);
+
+  protected readonly marqueeBox = computed(() => {
+    const r = this.marqueeRect();
+    if (!r) return null;
+    const left = Math.min(r.x1, r.x2);
+    const top = Math.min(r.y1, r.y2);
+    const width = Math.abs(r.x2 - r.x1);
+    const height = Math.abs(r.y2 - r.y1);
+    return { left, top, width, height };
+  });
 
   /** In-app PDF viewer (File Engine; not a browser tab). */
   protected readonly resumeWindow = signal<{
+    open: boolean;
+    minimized: boolean;
+    maximized: boolean;
+  }>({ open: false, minimized: false, maximized: false });
+
+  /** This PC explorer window. */
+  protected readonly thisPcWindow = signal<{
     open: boolean;
     minimized: boolean;
     maximized: boolean;
@@ -93,18 +125,40 @@ export class Desktop implements OnDestroy {
 
   protected readonly pdfViewerTitle = PDF_VIEWER_TITLE;
 
+  protected readonly thisPcWindowTitle = THIS_PC_WINDOW_TITLE;
+
+  protected readonly thisPcTitleIcon = THIS_PC_TITLE_ICON;
+
+  /** Filters rows in the This PC window (explorer search box). */
+  protected readonly thisPcSearchQuery = signal('');
+
+  /** Short flash of the This PC list when refresh is clicked. */
+  protected readonly thisPcListRefreshFlash = signal(false);
+
+  private thisPcRefreshFlashTimer: ReturnType<typeof setTimeout> | null = null;
+
   /** Open windows mirrored on the taskbar (Start-adjacent). */
   protected readonly taskbarTasks = computed((): TaskbarTaskItem[] => {
+    const tasks: TaskbarTaskItem[] = [];
+    const pc = this.thisPcWindow();
+    if (pc.open) {
+      tasks.push({
+        id: 'this-pc',
+        title: THIS_PC_WINDOW_TITLE,
+        iconSrc: desktopIconAssetPath('this-pc'),
+        minimized: pc.minimized,
+      });
+    }
     const w = this.resumeWindow();
-    if (!w.open) return [];
-    return [
-      {
+    if (w.open) {
+      tasks.push({
         id: 'resume',
         title: PDF_VIEWER_TITLE,
         iconSrc: desktopIconAssetPath('resume'),
         minimized: w.minimized,
-      },
-    ];
+      });
+    }
+    return tasks;
   });
 
   protected readonly iconPositions = signal<
@@ -149,6 +203,10 @@ export class Desktop implements OnDestroy {
   ngOnDestroy(): void {
     this.resizeObserver?.disconnect();
     this.clearRevealFallbackTimer();
+    if (this.thisPcRefreshFlashTimer !== null) {
+      clearTimeout(this.thisPcRefreshFlashTimer);
+      this.thisPcRefreshFlashTimer = null;
+    }
   }
 
   /** Theme toggle: radial reveal then commit night/day. */
@@ -252,18 +310,135 @@ export class Desktop implements OnDestroy {
   }
 
   protected onKeyboardSelect(v: DesktopIconVariant): void {
-    this.selectedVariant.set(v);
+    this.selectedVariants.set([v]);
+  }
+
+  /** Empty desktop-icons area: rubber-band selection. */
+  protected onDesktopIconsPointerDown(event: PointerEvent): void {
+    if (event.button !== 0) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    const el = event.target as Element | null;
+    if (el?.closest('.desktop-icon-slot')) return;
+
+    const surf = this.surface()?.nativeElement;
+    const iconsEl = surf?.querySelector('.desktop-icons') as HTMLElement | undefined;
+    if (!iconsEl) return;
+
+    event.preventDefault();
+    const ir = iconsEl.getBoundingClientRect();
+    const x0 = event.clientX - ir.left;
+    const y0 = event.clientY - ir.top;
+    this.marqueeRect.set({ x1: x0, y1: y0, x2: x0, y2: y0 });
+
+    const onMove = (pe: PointerEvent) => {
+      const x = pe.clientX - ir.left;
+      const y = pe.clientY - ir.top;
+      this.marqueeRect.update((cur) => (cur ? { ...cur, x2: x, y2: y } : cur));
+    };
+
+    const onUp = (pe: PointerEvent) => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      document.body.style.userSelect = '';
+      try {
+        iconsEl.releasePointerCapture(pe.pointerId);
+      } catch {
+        /* ignore */
+      }
+      this.endMarqueeSelection();
+    };
+
+    document.body.style.userSelect = 'none';
+    try {
+      iconsEl.setPointerCapture(event.pointerId);
+    } catch {
+      /* ignore */
+    }
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  }
+
+  private endMarqueeSelection(): void {
+    const box = this.marqueeBox();
+    this.marqueeRect.set(null);
+    if (!box) return;
+    if (box.width < MARQUEE_CLICK_MAX_PX && box.height < MARQUEE_CLICK_MAX_PX) {
+      this.selectedVariants.set([]);
+      return;
+    }
+    const m = this.gridMetrics();
+    if (!m) return;
+    const picked = this.variants.filter((v) => this.iconIntersectsMarqueeBox(v, box, m));
+    this.selectedVariants.set(picked);
+  }
+
+  private iconIntersectsMarqueeBox(
+    v: DesktopIconVariant,
+    box: { left: number; top: number; width: number; height: number },
+    m: { iconW: number; iconH: number },
+  ): boolean {
+    const left = this.iconLeft(v);
+    const top = this.iconTop(v);
+    const iw = m.iconW;
+    const ih = m.iconH;
+    return !(
+      left + iw < box.left ||
+      left > box.left + box.width ||
+      top + ih < box.top ||
+      top > box.top + box.height
+    );
   }
 
   protected onSlotDblClick(v: DesktopIconVariant, event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    if (v !== 'resume') return;
-    this.resumeWindow.update((s) => ({
-      open: true,
-      minimized: false,
-      maximized: s.maximized,
-    }));
+    if (v === 'this-pc') {
+      this.thisPcWindow.update((s) => ({
+        open: true,
+        minimized: false,
+        maximized: s.maximized,
+      }));
+      return;
+    }
+    if (v === 'resume') {
+      this.resumeWindow.update((s) => ({
+        open: true,
+        minimized: false,
+        maximized: s.maximized,
+      }));
+    }
+  }
+
+  protected onThisPcRefreshClick(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.thisPcRefreshFlashTimer !== null) {
+      clearTimeout(this.thisPcRefreshFlashTimer);
+      this.thisPcRefreshFlashTimer = null;
+    }
+    this.thisPcListRefreshFlash.set(true);
+    this.thisPcRefreshFlashTimer = setTimeout(() => {
+      this.thisPcListRefreshFlash.set(false);
+      this.thisPcRefreshFlashTimer = null;
+    }, 45);
+  }
+
+  protected closeThisPcWindow(): void {
+    this.thisPcSearchQuery.set('');
+    this.thisPcWindow.set({ open: false, minimized: false, maximized: false });
+  }
+
+  protected minimizeThisPcWindow(): void {
+    this.thisPcWindow.update((s) => ({ ...s, minimized: true }));
+  }
+
+  protected toggleThisPcMaximize(): void {
+    this.thisPcWindow.update((s) => ({ ...s, maximized: !s.maximized }));
+  }
+
+  protected restoreThisPcWindow(): void {
+    this.thisPcWindow.update((s) => ({ ...s, minimized: false }));
   }
 
   protected closeResumeWindow(): void {
@@ -283,10 +458,17 @@ export class Desktop implements OnDestroy {
   }
 
   protected onTaskbarTaskActivate(id: string): void {
-    if (id !== 'resume') return;
-    const w = this.resumeWindow();
-    if (w.minimized) this.restoreResumeWindow();
-    else this.minimizeResumeWindow();
+    if (id === 'this-pc') {
+      const w = this.thisPcWindow();
+      if (w.minimized) this.restoreThisPcWindow();
+      else this.minimizeThisPcWindow();
+      return;
+    }
+    if (id === 'resume') {
+      const w = this.resumeWindow();
+      if (w.minimized) this.restoreResumeWindow();
+      else this.minimizeResumeWindow();
+    }
   }
 
   private measureGrid(surfaceEl: HTMLElement): void {
@@ -355,31 +537,52 @@ export class Desktop implements OnDestroy {
     const m = this.gridMetrics();
     if (!m) return;
 
+    const sel = this.selectedVariants();
+    const moveGroup: DesktopIconVariant[] =
+      sel.length > 1 && sel.includes(variant) ? [...sel] : [variant];
+
     const startX = event.clientX;
     const startY = event.clientY;
 
     const slot = (event.currentTarget as HTMLElement | null) ?? null;
     if (!slot) return;
-    const rect = slot.getBoundingClientRect();
-    const offsetX = startX - rect.left;
-    const offsetY = startY - rect.top;
+
+    const initialRects = new Map<DesktopIconVariant, DOMRect>();
+    for (const v of moveGroup) {
+      const slotEl = this.host.nativeElement.querySelector(
+        `[data-desktop-variant="${CSS.escape(v)}"]`,
+      ) as HTMLElement | null;
+      if (slotEl) initialRects.set(v, slotEl.getBoundingClientRect());
+    }
+    if (!initialRects.has(variant)) return;
 
     let dragStarted = false;
-    let ghost: HTMLElement | null = null;
+    const ghosts: HTMLElement[] = [];
 
     const onMove = (pe: PointerEvent) => {
       const dx = pe.clientX - startX;
       const dy = pe.clientY - startY;
       if (!dragStarted && Math.hypot(dx, dy) > DRAG_THRESHOLD_PX) {
         dragStarted = true;
-        this.draggingVariant.set(variant);
-        ghost = this.createGhost(variant);
-        ghost.style.left = `${startX - offsetX}px`;
-        ghost.style.top = `${startY - offsetY}px`;
+        this.draggingVariants.set(moveGroup);
+        for (const v of moveGroup) {
+          const r = initialRects.get(v);
+          if (!r) continue;
+          const g = this.createGhost(v);
+          ghosts.push(g);
+          g.style.left = `${r.left}px`;
+          g.style.top = `${r.top}px`;
+        }
       }
-      if (dragStarted && ghost) {
-        ghost.style.left = `${pe.clientX - offsetX}px`;
-        ghost.style.top = `${pe.clientY - offsetY}px`;
+      if (dragStarted) {
+        for (let i = 0; i < moveGroup.length; i++) {
+          const v = moveGroup[i];
+          const r = initialRects.get(v);
+          const g = ghosts[i];
+          if (!r || !g) continue;
+          g.style.left = `${r.left + dx}px`;
+          g.style.top = `${r.top + dy}px`;
+        }
       }
     };
 
@@ -390,13 +593,15 @@ export class Desktop implements OnDestroy {
       document.body.style.userSelect = '';
 
       if (dragStarted) {
-        ghost?.remove();
-        this.finalizeDrag(variant, pe.clientX, pe.clientY);
-        this.draggingVariant.set(null);
+        for (const g of ghosts) {
+          g.remove();
+        }
+        this.finalizeDragGroup(variant, moveGroup, pe.clientX, pe.clientY);
+        this.draggingVariants.set([]);
       } else {
         const dist = Math.hypot(pe.clientX - startX, pe.clientY - startY);
         if (dist <= DRAG_THRESHOLD_PX) {
-          this.selectedVariant.set(variant);
+          this.selectedVariants.set([variant]);
         }
       }
     };
@@ -424,8 +629,9 @@ export class Desktop implements OnDestroy {
     return wrap;
   }
 
-  private finalizeDrag(
-    variant: DesktopIconVariant,
+  private finalizeDragGroup(
+    primary: DesktopIconVariant,
+    group: DesktopIconVariant[],
     clientX: number,
     clientY: number,
   ): void {
@@ -446,44 +652,75 @@ export class Desktop implements OnDestroy {
     col = Math.max(0, Math.min(m.maxCol, col));
     row = Math.max(0, Math.min(m.maxRow, row));
 
-    if (this.isCellOccupied(row, col, variant)) {
-      return;
-    }
+    const positions = this.iconPositions();
+    const oldPrimary = positions[primary];
+    const dr = row - oldPrimary.row;
+    const dc = col - oldPrimary.col;
 
-    this.iconPositions.update((pos) => ({
-      ...pos,
-      [variant]: { row, col },
-    }));
+    if (dr === 0 && dc === 0) return;
+
+    if (!this.canMoveGroup(group, dr, dc)) return;
+
+    this.iconPositions.update((pos) => {
+      const next = { ...pos };
+      for (const v of group) {
+        const p = pos[v];
+        next[v] = { row: p.row + dr, col: p.col + dc };
+      }
+      return next;
+    });
 
     this.scheduleMeasureGrid();
   }
 
-  private isCellOccupied(
-    row: number,
-    col: number,
-    except: DesktopIconVariant,
-  ): boolean {
+  private canMoveGroup(group: DesktopIconVariant[], dr: number, dc: number): boolean {
+    const m = this.gridMetrics();
+    if (!m) return false;
     const positions = this.iconPositions();
-    for (const key of this.variants) {
-      if (key === except) continue;
-      const p = positions[key];
-      if (p.row === row && p.col === col) return true;
+    const selectedSet = new Set(group);
+    const targets = new Map<string, DesktopIconVariant>();
+
+    for (const v of group) {
+      const p = positions[v];
+      const tr = p.row + dr;
+      const tc = p.col + dc;
+      if (tr < 0 || tr > m.maxRow || tc < 0 || tc > m.maxCol) return false;
+      const key = `${tr},${tc}`;
+      if (targets.has(key)) return false;
+      targets.set(key, v);
     }
-    return false;
+
+    for (const v of this.variants) {
+      if (selectedSet.has(v)) continue;
+      const p = positions[v];
+      if (targets.has(`${p.row},${p.col}`)) return false;
+    }
+    return true;
   }
 
   @HostListener('document:mousedown', ['$event'])
   onDocumentMouseDown(event: MouseEvent): void {
-    if (this.draggingVariant()) return;
+    if (this.draggingVariants().length > 0) return;
     if (event.button !== 0) return;
     const t = event.target;
     if (!t || !(t instanceof Node)) return;
-    const icons = this.host.nativeElement.querySelectorAll('app-desktop-icon');
+    const host = this.host.nativeElement;
+    const icons = host.querySelectorAll('app-desktop-icon');
     for (let i = 0; i < icons.length; i++) {
       if (icons[i].contains(t)) return;
     }
-    const osWin = this.host.nativeElement.querySelector('app-os-window');
+    const osWin = host.querySelector('app-os-window');
     if (osWin && osWin.contains(t)) return;
-    this.selectedVariant.set(null);
+    const taskbar = host.querySelector('app-taskbar');
+    if (taskbar && taskbar.contains(t)) return;
+    const iconsArea = host.querySelector('.desktop-icons');
+    if (
+      iconsArea?.contains(t) &&
+      t instanceof Element &&
+      !t.closest('.desktop-icon-slot')
+    ) {
+      return;
+    }
+    this.selectedVariants.set([]);
   }
 }

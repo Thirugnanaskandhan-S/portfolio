@@ -13,11 +13,21 @@
     }
   </div>
   <div class="desktop-surface" #surface>
-    <div class="desktop-icons">
+    <div class="desktop-icons" (pointerdown)="onDesktopIconsPointerDown($event)">
+      @if (marqueeBox(); as mq) {
+        <div
+          class="desktop-marquee"
+          [style.left.px]="mq.left"
+          [style.top.px]="mq.top"
+          [style.width.px]="mq.width"
+          [style.height.px]="mq.height"
+        ></div>
+      }
       @for (v of variants; track v) {
         <div
           class="desktop-icon-slot"
-          [class.desktop-icon-slot--ghosting]="draggingVariant() === v"
+          [attr.data-desktop-variant]="v"
+          [class.desktop-icon-slot--ghosting]="draggingVariants().includes(v)"
           [style.left.px]="iconLeft(v)"
           [style.top.px]="iconTop(v)"
           (mousedown)="$event.stopPropagation()"
@@ -27,7 +37,7 @@
           <app-desktop-icon
             [variant]="v"
             [label]="labels[v]"
-            [selected]="selectedVariant() === v"
+            [selected]="selectedVariants().includes(v)"
             (selectedChange)="onKeyboardSelect(v)"
           />
         </div>
@@ -35,6 +45,29 @@
     </div>
   </div>
 
+  @if (thisPcWindow().open && !thisPcWindow().minimized) {
+    <app-os-window
+      [title]="thisPcWindowTitle"
+      [titleIcon]="thisPcTitleIcon"
+      [subheader]="true"
+      [useIframe]="false"
+      [maximized]="thisPcWindow().maximized"
+      (windowClose)="closeThisPcWindow()"
+      (windowMinimize)="minimizeThisPcWindow()"
+      (windowToggleMax)="toggleThisPcMaximize()"
+    >
+      <app-explorer-command-bar
+        appWindowSubheader
+        [searchQuery]="thisPcSearchQuery()"
+        (searchQueryChange)="thisPcSearchQuery.set($event)"
+        (retryClick)="onThisPcRefreshClick()"
+      />
+      <app-this-pc
+        [searchQuery]="thisPcSearchQuery()"
+        [listRefreshFlash]="thisPcListRefreshFlash()"
+      />
+    </app-os-window>
+  }
   @if (resumeWindow().open && !resumeWindow().minimized) {
     <app-os-window
       [title]="pdfViewerTitle"

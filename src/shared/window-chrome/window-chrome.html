@@ -1,0 +1,50 @@
+<div class="window-chrome">
+  <div
+    class="window-chrome__titlebar"
+    [class.window-chrome__titlebar--maximized]="maximized()"
+    (dblclick)="onTitleBarDblClick($event)"
+    (pointerdown)="onTitleBarPointerDown($event)"
+  >
+    <div class="window-chrome__title-cluster">
+      @if (titleIcon(); as iconSrc) {
+        <img
+          class="window-chrome__title-icon"
+          [src]="iconSrc"
+          alt=""
+          width="16"
+          height="16"
+          draggable="false"
+        />
+      }
+      <span class="window-chrome__title" id="osw-title">{{ title() }}</span>
+    </div>
+    <div class="window-chrome__controls">
+      <button
+        type="button"
+        class="window-chrome__btn window-chrome__btn--min"
+        aria-label="Minimize"
+        (click)="windowMinimize.emit()"
+      ></button>
+      <button
+        type="button"
+        class="window-chrome__btn window-chrome__btn--max"
+        [attr.aria-label]="maximized() ? 'Restore' : 'Maximize'"
+        (click)="windowToggleMax.emit()"
+      ></button>
+      <button
+        type="button"
+        class="window-chrome__btn window-chrome__btn--close"
+        aria-label="Close"
+        (click)="windowClose.emit()"
+      ></button>
+    </div>
+  </div>
+  <!-- ng-content must not live inside @if — breaks nested projection from app-os-window. -->
+  <div
+    class="window-chrome__subheader"
+    [class.window-chrome__subheader--hidden]="!subheader()"
+  >
+    <!-- OsWindow already projects only [appWindowSubheader] here; plain ng-content avoids nested-select issues. -->
+    <ng-content />
+  </div>
+</div>

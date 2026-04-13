@@ -1,0 +1,62 @@
+<div class="explorer-details-table">
+  <table
+    class="explorer-details-table__grid"
+    role="grid"
+    [attr.aria-label]="ariaLabel()"
+  >
+    <colgroup>
+      <col class="explorer-details-table__col-shrink" />
+      <col class="explorer-details-table__col-shrink" />
+      <col class="explorer-details-table__col-shrink" />
+      <col class="explorer-details-table__col-shrink" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="explorer-details-table__th-name explorer-details-table__col--shrink" scope="col">
+          {{ colName() }}
+        </th>
+        <th class="explorer-details-table__th-date explorer-details-table__col--shrink" scope="col">
+          {{ colDateModified() }}
+        </th>
+        <th class="explorer-details-table__th-type explorer-details-table__col--shrink" scope="col">
+          {{ colType() }}
+        </th>
+        <th class="explorer-details-table__th-size explorer-details-table__col--shrink" scope="col">
+          {{ colSize() }}
+        </th>
+      </tr>
+    </thead>
+    <tbody
+      class="explorer-details-table__tbody"
+      [class.explorer-details-table__tbody--refresh-flash]="refreshFlash()"
+    >
+      @for (row of rows(); track row.id) {
+        <tr
+          class="explorer-details-table__row"
+          tabindex="0"
+          (dblclick)="onRowDblClick(row, $event)"
+        >
+          <td class="explorer-details-table__cell-name explorer-details-table__col--shrink">
+            <span class="explorer-details-table__item-icon">
+              <img [src]="row.iconSrc" alt="" width="16" height="16" draggable="false" />
+            </span>
+            <span class="explorer-details-table__item-label">{{ row.name }}</span>
+          </td>
+          <td class="explorer-details-table__cell-date explorer-details-table__col--shrink">
+            {{ row.dateModified }}
+          </td>
+          <td class="explorer-details-table__cell-type explorer-details-table__col--shrink">
+            {{ row.type }}
+          </td>
+          <td class="explorer-details-table__cell-size explorer-details-table__col--shrink">
+            {{ sizeCell(row) }}
+          </td>
+        </tr>
+      } @empty {
+        <tr class="explorer-details-table__row explorer-details-table__row--empty">
+          <td class="explorer-details-table__empty-msg" colspan="4">{{ emptyMessage() }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
