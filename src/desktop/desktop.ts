@@ -18,7 +18,13 @@ import {
 } from '../shared/desktop-icon/desktop-icon';
 import { ExplorerCommandBar } from '../shared/explorer-command-bar/explorer-command-bar';
 import { OsWindow } from '../shared/os-window/os-window';
+import { StartMenu } from '../shared/start-menu/start-menu';
 import { Taskbar, type DarkModeChangeDetail, type TaskbarTaskItem } from '../shared/taskbar/taskbar';
+import {
+  THIS_PC_MAIN_VIEW_ADDRESS,
+  type ThisPcMainView,
+  isThisPcSubView,
+} from '../this-pc/this-pc-main-view';
 import { ThisPc } from '../this-pc/this-pc';
 
 const RESUME_PDF_SRC = 'assets/Resume.pdf';
@@ -32,6 +38,7 @@ const PDF_VIEWER_TITLE = 'File Engine - Resume.pdf';
 
 const THIS_PC_WINDOW_TITLE = 'This PC';
 const THIS_PC_TITLE_ICON = 'assets/this-pc.png';
+const THIS_PC_C_DRIVE_TITLE_ICON = 'assets/c-drive.png';
 
 const DRAG_THRESHOLD_PX = 5;
 /** Below this size, marquee mouseup is treated as a click (clear selection). */
@@ -52,7 +59,7 @@ function cmToPx(cm: number, anchor: HTMLElement): number {
 
 @Component({
   selector: 'app-desktop',
-  imports: [DesktopIcon, ExplorerCommandBar, OsWindow, Taskbar, ThisPc],
+  imports: [DesktopIcon, ExplorerCommandBar, OsWindow, StartMenu, Taskbar, ThisPc],
   templateUrl: './desktop.html',
   styleUrl: './desktop.scss',
 })
@@ -125,15 +132,34 @@ export class Desktop implements OnDestroy {
 
   protected readonly pdfViewerTitle = PDF_VIEWER_TITLE;
 
-  protected readonly thisPcWindowTitle = THIS_PC_WINDOW_TITLE;
+  /** This PC window: home vs. a library / drive (title + address + taskbar label). */
+  protected readonly thisPcMainView = signal<ThisPcMainView>('root');
 
-  protected readonly thisPcTitleIcon = THIS_PC_TITLE_ICON;
+  /** This PC window chrome icon (C: drive uses {@link THIS_PC_C_DRIVE_TITLE_ICON}). */
+  protected readonly thisPcTitleIcon = computed(() =>
+    this.thisPcMainView() === 'c-drive' ? THIS_PC_C_DRIVE_TITLE_ICON : THIS_PC_TITLE_ICON,
+  );
+
+  protected readonly thisPcDisplayTitle = computed(() => {
+    const v = this.thisPcMainView();
+    if (v === 'root') return THIS_PC_WINDOW_TITLE;
+    return THIS_PC_MAIN_VIEW_ADDRESS[v];
+  });
+
+  protected readonly thisPcExplorerAddressText = computed(() => {
+    const v = this.thisPcMainView();
+    if (v === 'root') return 'My PC';
+    return THIS_PC_MAIN_VIEW_ADDRESS[v];
+  });
 
   /** Filters rows in the This PC window (explorer search box). */
   protected readonly thisPcSearchQuery = signal('');
 
   /** Short flash of the This PC list when refresh is clicked. */
   protected readonly thisPcListRefreshFlash = signal(false);
+
+  /** Windows-style Start menu (slides up from the taskbar). */
+  protected readonly startMenuOpen = signal(false);
 
   private thisPcRefreshFlashTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -144,8 +170,11 @@ export class Desktop implements OnDestroy {
     if (pc.open) {
       tasks.push({
         id: 'this-pc',
-        title: THIS_PC_WINDOW_TITLE,
-        iconSrc: desktopIconAssetPath('this-pc'),
+        title: this.thisPcDisplayTitle(),
+        iconSrc:
+          this.thisPcMainView() === 'c-drive'
+            ? THIS_PC_C_DRIVE_TITLE_ICON
+            : desktopIconAssetPath('this-pc'),
         minimized: pc.minimized,
       });
     }
@@ -395,6 +424,7 @@ export class Desktop implements OnDestroy {
     event.preventDefault();
     event.stopPropagation();
     if (v === 'this-pc') {
+      this.thisPcMainView.set('root');
       this.thisPcWindow.update((s) => ({
         open: true,
         minimized: false,
@@ -424,8 +454,37 @@ export class Desktop implements OnDestroy {
     }, 45);
   }
 
+  protected onThisPcFolderEnter(detail: { folderId: string }): void {
+    if (isThisPcSubView(detail.folderId)) {
+      this.thisPcMainView.set(detail.folderId);
+    }
+  }
+
+  protected onThisPcNavigateToRoot(): void {
+    this.thisPcMainView.set('root');
+  }
+
+  protected onThisPcNavigateUp(): void {
+    this.thisPcMainView.set('root');
+  }
+
+  protected onThisPcDesktopShortcut(detail: { id: DesktopIconVariant }): void {
+    if (detail.id === 'this-pc') {
+      this.thisPcMainView.set('root');
+      return;
+    }
+    if (detail.id === 'resume') {
+      this.resumeWindow.update((s) => ({
+        open: true,
+        minimized: false,
+        maximized: s.maximized,
+      }));
+    }
+  }
+
   protected closeThisPcWindow(): void {
     this.thisPcSearchQuery.set('');
+    this.thisPcMainView.set('root');
     this.thisPcWindow.set({ open: false, minimized: false, maximized: false });
   }
 
@@ -469,6 +528,14 @@ export class Desktop implements OnDestroy {
       if (w.minimized) this.restoreResumeWindow();
       else this.minimizeResumeWindow();
     }
+  }
+
+  protected onTaskbarStartClick(): void {
+    this.startMenuOpen.update((open) => !open);
+  }
+
+  protected onStartMenuClose(): void {
+    this.startMenuOpen.set(false);
   }
 
   private measureGrid(surfaceEl: HTMLElement): void {
@@ -698,6 +765,14 @@ export class Desktop implements OnDestroy {
     return true;
   }
 
+  @HostListener('document:keydown', ['$event'])
+  protected onDocumentKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape') return;
+    if (!this.startMenuOpen()) return;
+    event.preventDefault();
+    this.startMenuOpen.set(false);
+  }
+
   @HostListener('document:mousedown', ['$event'])
   onDocumentMouseDown(event: MouseEvent): void {
     if (this.draggingVariants().length > 0) return;
@@ -705,6 +780,20 @@ export class Desktop implements OnDestroy {
     const t = event.target;
     if (!t || !(t instanceof Node)) return;
     const host = this.host.nativeElement;
+
+    if (this.startMenuOpen()) {
+      const taskbar = host.querySelector('app-taskbar');
+      if (!(taskbar && taskbar.contains(t))) {
+        const panelEl =
+          t instanceof Element ? (t as Element).closest('.start-menu-panel') : null;
+        const insideOpenPanel =
+          !!panelEl && panelEl.classList.contains('start-menu-panel--open');
+        if (!insideOpenPanel) {
+          this.startMenuOpen.set(false);
+        }
+      }
+    }
+
     const icons = host.querySelectorAll('app-desktop-icon');
     for (let i = 0; i < icons.length; i++) {
       if (icons[i].contains(t)) return;
@@ -721,6 +810,7 @@ export class Desktop implements OnDestroy {
     ) {
       return;
     }
+    if (host.querySelector('app-start-menu')?.contains(t)) return;
     this.selectedVariants.set([]);
   }
 }

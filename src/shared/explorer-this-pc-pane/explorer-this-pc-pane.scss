@@ -1,0 +1,33 @@
+/* Shared shell for “This PC” subfolders (Details list). */
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.explorer-this-pc-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  user-select: none;
+  background: #202020;
+  color: #e8e8e8;
+}
+
+.explorer-this-pc-pane__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 16px 20px;
+  transition: opacity 0.05s ease;
+}
+
+.explorer-this-pc-pane__scroll--refresh-flash {
+  opacity: 0;
+}

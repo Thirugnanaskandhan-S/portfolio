@@ -47,8 +47,8 @@
 
   @if (thisPcWindow().open && !thisPcWindow().minimized) {
     <app-os-window
-      [title]="thisPcWindowTitle"
-      [titleIcon]="thisPcTitleIcon"
+      [title]="thisPcDisplayTitle()"
+      [titleIcon]="thisPcTitleIcon()"
       [subheader]="true"
       [useIframe]="false"
       [maximized]="thisPcWindow().maximized"
@@ -58,13 +58,20 @@
     >
       <app-explorer-command-bar
         appWindowSubheader
+        [addressText]="thisPcExplorerAddressText()"
+        [navigateUpEnabled]="thisPcMainView() !== 'root'"
         [searchQuery]="thisPcSearchQuery()"
         (searchQueryChange)="thisPcSearchQuery.set($event)"
         (retryClick)="onThisPcRefreshClick()"
+        (upClick)="onThisPcNavigateUp()"
       />
       <app-this-pc
+        [mainView]="thisPcMainView()"
         [searchQuery]="thisPcSearchQuery()"
         [listRefreshFlash]="thisPcListRefreshFlash()"
+        (folderEnter)="onThisPcFolderEnter($event)"
+        (navigateToRoot)="onThisPcNavigateToRoot()"
+        (desktopShortcutOpen)="onThisPcDesktopShortcut($event)"
       />
     </app-os-window>
   }
@@ -78,9 +85,11 @@
       (windowToggleMax)="toggleResumeMaximize()"
     />
   }
+  <app-start-menu [open]="startMenuOpen()" (close)="onStartMenuClose()" />
   <app-taskbar
     [tasks]="taskbarTasks()"
     (taskActivate)="onTaskbarTaskActivate($event)"
+    (startActivate)="onTaskbarStartClick()"
     (darkModeChange)="onDarkModeChange($event)"
   />
 </div>

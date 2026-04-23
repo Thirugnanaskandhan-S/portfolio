@@ -6,16 +6,27 @@
     <span class="explorer-bar__icon-slot">
       <img [src]="iconForward" alt="" width="16" height="16" draggable="false" />
     </span>
-    <span class="explorer-bar__icon-slot">
-      <img [src]="iconUp" alt="" width="16" height="16" draggable="false" />
-    </span>
+    @if (navigateUpEnabled()) {
+      <button
+        type="button"
+        class="explorer-bar__icon-btn explorer-bar__icon-slot"
+        aria-label="Up"
+        (click)="upClick.emit()"
+      >
+        <img [src]="iconUp" alt="" width="16" height="16" draggable="false" />
+      </button>
+    } @else {
+      <span class="explorer-bar__icon-slot">
+        <img [src]="iconUp" alt="" width="16" height="16" draggable="false" />
+      </span>
+    }
   </div>
   <div class="explorer-bar__address" role="group" aria-label="Current location">
     <div class="explorer-bar__field explorer-bar__field--address">
       <span class="explorer-bar__icon-slot explorer-bar__icon-slot--in-field">
         <img [src]="iconThisPc" alt="" width="16" height="16" draggable="false" />
       </span>
-      <span class="explorer-bar__address-text">My PC</span>
+      <span class="explorer-bar__address-text">{{ addressText() }}</span>
       <button
         type="button"
         class="explorer-bar__icon-btn explorer-bar__icon-slot explorer-bar__icon-slot--in-field"

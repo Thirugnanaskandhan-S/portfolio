@@ -1,11 +1,24 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 
+import { CDriveThisPc } from '../c-drive-this-pc/c-drive-this-pc';
+import { DesktopThisPc } from '../desktop-this-pc/desktop-this-pc';
+import { DocumentsThisPc } from '../documents-this-pc/documents-this-pc';
+import { MusicThisPc } from '../music-this-pc/music-this-pc';
+import { PicturesThisPc } from '../pictures-this-pc/pictures-this-pc';
+import { VideosThisPc } from '../videos-this-pc/videos-this-pc';
+import { type DesktopIconVariant } from '../shared/desktop-icon/desktop-icon';
 import {
   ExplorerNavPane,
   type ExplorerNavNode,
 } from '../shared/explorer-nav-pane/explorer-nav-pane';
+import {
+  THIS_PC_C_DRIVE_WINDOW_LABEL,
+  type ThisPcMainView,
+  isThisPcSubView,
+} from './this-pc-main-view';
 
 const FOLDER_ICON = 'assets/folder.png';
+const C_DRIVE_TILE_ICON = 'assets/c-drive.png';
 
 interface FolderTile {
   readonly id: string;
@@ -15,6 +28,8 @@ interface FolderTile {
 interface DriveTile {
   readonly id: string;
   readonly label: string;
+  /** Tile image; template falls back to the generic folder icon when omitted. */
+  readonly iconSrc?: string;
   readonly freeGb: number;
   /** Used for the usage bar when `usageBarPercent` is not set. */
   readonly totalGb: number;
@@ -42,7 +57,8 @@ const FOLDER_TILES: readonly FolderTile[] = [
 const DRIVE_TILES: readonly DriveTile[] = [
   {
     id: 'c',
-    label: "Thiru's Brain Capacity (C:)",
+    label: THIS_PC_C_DRIVE_WINDOW_LABEL,
+    iconSrc: C_DRIVE_TILE_ICON,
     freeGb: 17.6,
     totalGb: 237,
     freeDisplay: 'Skills / 0',
@@ -59,12 +75,20 @@ const THIS_PC_NAV_NODES: readonly ExplorerNavNode[] = [
   { id: 'pictures', label: 'Pictures' },
   { id: 'music', label: 'Music' },
   { id: 'videos', label: 'Videos' },
-  { id: 'c-drive', label: "Thiru's Brain Capacity (C:)" },
+  { id: 'c-drive', label: THIS_PC_C_DRIVE_WINDOW_LABEL },
 ];
 
 @Component({
   selector: 'app-this-pc',
-  imports: [ExplorerNavPane],
+  imports: [
+    CDriveThisPc,
+    DesktopThisPc,
+    DocumentsThisPc,
+    ExplorerNavPane,
+    MusicThisPc,
+    PicturesThisPc,
+    VideosThisPc,
+  ],
   templateUrl: './this-pc.html',
   styleUrl: './this-pc.scss',
 })
@@ -75,6 +99,18 @@ export class ThisPc {
   /** Brief flash of the main pane (address-bar refresh). */
   listRefreshFlash = input(false);
 
+  /** Main pane: This PC home vs. a library / drive opened from Folders, Drives, or nav. */
+  mainView = input<ThisPcMainView>('root');
+
+  /** User opened a folder from the Folders grid or chose **Desktop** in the nav pane. */
+  folderEnter = output<{ folderId: string }>();
+
+  /** User chose the **This PC** root in the nav pane or host navigated up. */
+  navigateToRoot = output<void>();
+
+  /** Double-click a shortcut inside the in-window Desktop folder. */
+  desktopShortcutOpen = output<{ id: DesktopIconVariant }>();
+
   protected readonly navNodes = THIS_PC_NAV_NODES;
   protected readonly thisPcNavExpanded = signal(true);
   protected readonly selectedNavId = signal<string>('this-pc');
@@ -83,6 +119,18 @@ export class ThisPc {
   protected readonly drivesOpen = signal(true);
 
   protected readonly folderIconSrc = FOLDER_ICON;
+
+  #prevMainView: ThisPcMainView = 'root';
+
+  constructor() {
+    effect(() => {
+      const cur = this.mainView();
+      if (this.#prevMainView !== 'root' && cur === 'root') {
+        this.selectedNavId.set('this-pc');
+      }
+      this.#prevMainView = cur;
+    });
+  }
 
   protected readonly filteredFolders = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
@@ -119,5 +167,36 @@ export class ThisPc {
     const freePart = d.freeDisplay ?? `${d.freeGb} GB`;
     const totalPart = d.totalDisplay ?? `${d.totalGb} GB`;
     return `${freePart} free of ${totalPart}`;
+  }
+
+  protected onNavSelected(id: string): void {
+    this.selectedNavId.set(id);
+    if (id === 'this-pc') {
+      this.navigateToRoot.emit();
+      return;
+    }
+    if (id === 'c-drive') {
+      this.folderEnter.emit({ folderId: 'c-drive' });
+      return;
+    }
+    if (isThisPcSubView(id)) {
+      this.folderEnter.emit({ folderId: id });
+    }
+  }
+
+  protected onFolderTileDblClick(f: FolderTile, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!isThisPcSubView(f.id)) return;
+    this.selectedNavId.set(f.id);
+    this.folderEnter.emit({ folderId: f.id });
+  }
+
+  protected onDriveTileDblClick(d: DriveTile, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (d.id !== 'c') return;
+    this.selectedNavId.set('c-drive');
+    this.folderEnter.emit({ folderId: 'c-drive' });
   }
 }

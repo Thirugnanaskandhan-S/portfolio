@@ -5,7 +5,7 @@
       [expanded]="thisPcNavExpanded()"
       (expandedChange)="thisPcNavExpanded.set($event)"
       [selectedId]="selectedNavId()"
-      (selectedIdChange)="selectedNavId.set($event)"
+      (selectedIdChange)="onNavSelected($event)"
       childListDomId="this-pc-nav-children"
     />
 
@@ -13,107 +13,140 @@
       class="this-pc__main"
       [class.this-pc__main--refresh-flash]="listRefreshFlash()"
     >
-      <div class="this-pc__scroll">
-        <!-- Folders -->
-        <section class="this-pc__section" aria-labelledby="this-pc-folders-heading">
-          <button
-            type="button"
-            class="this-pc__section-head"
-            [attr.aria-expanded]="foldersOpen()"
-            aria-controls="this-pc-folders-panel"
-            id="this-pc-folders-heading"
-            (click)="toggleFolders()"
-          >
-            <span
-              class="this-pc__section-chevron"
-              [class.this-pc__section-chevron--open]="foldersOpen()"
-              aria-hidden="true"
-            ></span>
-            <span class="this-pc__section-title">Folders ({{ folderSectionCount() }})</span>
-          </button>
-          @if (foldersOpen()) {
-            <div id="this-pc-folders-panel" class="this-pc__section-body">
-              @if (filteredFolders().length > 0) {
-                <div class="this-pc__grid this-pc__grid--folders" role="list">
-                  @for (f of filteredFolders(); track f.id) {
-                    <div class="this-pc__tile this-pc__tile--folder" role="listitem">
-                      <img
-                        class="this-pc__tile-icon"
-                        [src]="folderIconSrc"
-                        alt=""
-                        width="48"
-                        height="48"
-                        draggable="false"
-                      />
-                      <span class="this-pc__tile-label">{{ f.label }}</span>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <p class="this-pc__empty">No items match your search.</p>
-              }
-            </div>
-          }
-        </section>
-
-        <!-- Devices and drives -->
-        <section class="this-pc__section" aria-labelledby="this-pc-drives-heading">
-          <button
-            type="button"
-            class="this-pc__section-head"
-            [attr.aria-expanded]="drivesOpen()"
-            aria-controls="this-pc-drives-panel"
-            id="this-pc-drives-heading"
-            (click)="toggleDrives()"
-          >
-            <span
-              class="this-pc__section-chevron"
-              [class.this-pc__section-chevron--open]="drivesOpen()"
-              aria-hidden="true"
-            ></span>
-            <span class="this-pc__section-title"
-              >Devices and drives ({{ drivesSectionCount() }})</span
+      @switch (mainView()) {
+        @case ('desktop') {
+          <app-desktop-this-pc
+            [listRefreshFlash]="listRefreshFlash()"
+            (shortcutOpen)="desktopShortcutOpen.emit($event)"
+          />
+        }
+        @case ('documents') {
+          <app-documents-this-pc [listRefreshFlash]="listRefreshFlash()" />
+        }
+        @case ('pictures') {
+          <app-pictures-this-pc [listRefreshFlash]="listRefreshFlash()" />
+        }
+        @case ('music') {
+          <app-music-this-pc [listRefreshFlash]="listRefreshFlash()" />
+        }
+        @case ('videos') {
+          <app-videos-this-pc [listRefreshFlash]="listRefreshFlash()" />
+        }
+        @case ('c-drive') {
+          <app-c-drive-this-pc [listRefreshFlash]="listRefreshFlash()" />
+        }
+        @default {
+        <div class="this-pc__scroll">
+          <!-- Folders -->
+          <section class="this-pc__section" aria-labelledby="this-pc-folders-heading">
+            <button
+              type="button"
+              class="this-pc__section-head"
+              [attr.aria-expanded]="foldersOpen()"
+              aria-controls="this-pc-folders-panel"
+              id="this-pc-folders-heading"
+              (click)="toggleFolders()"
             >
-          </button>
-          @if (drivesOpen()) {
-            <div id="this-pc-drives-panel" class="this-pc__section-body">
-              @if (filteredDrives().length > 0) {
-                <div class="this-pc__grid this-pc__grid--drives" role="list">
-                  @for (d of filteredDrives(); track d.id) {
-                    <div class="this-pc__tile this-pc__tile--drive" role="listitem">
-                      <img
-                        class="this-pc__tile-icon this-pc__tile-icon--drive"
-                        [src]="folderIconSrc"
-                        alt=""
-                        width="48"
-                        height="48"
-                        draggable="false"
-                      />
-                      <div class="this-pc__drive-meta">
-                        <div class="this-pc__drive-name">{{ d.label }}</div>
-                        <div
-                          class="this-pc__drive-bar"
-                          [class.this-pc__drive-bar--critical]="d.barVariant === 'critical'"
-                          [class.this-pc__drive-bar--ok]="d.barVariant === 'ok'"
-                          role="presentation"
-                        >
-                          <div
-                            class="this-pc__drive-bar-fill"
-                            [style.width.%]="usedPercent(d)"
-                          ></div>
-                        </div>
-                        <div class="this-pc__drive-sub">{{ formatDriveSubtitle(d) }}</div>
+              <span
+                class="this-pc__section-chevron"
+                [class.this-pc__section-chevron--open]="foldersOpen()"
+                aria-hidden="true"
+              ></span>
+              <span class="this-pc__section-title">Folders ({{ folderSectionCount() }})</span>
+            </button>
+            @if (foldersOpen()) {
+              <div id="this-pc-folders-panel" class="this-pc__section-body">
+                @if (filteredFolders().length > 0) {
+                  <div class="this-pc__grid this-pc__grid--folders" role="list">
+                    @for (f of filteredFolders(); track f.id) {
+                      <div
+                        class="this-pc__tile this-pc__tile--folder"
+                        role="listitem"
+                        (dblclick)="onFolderTileDblClick(f, $event)"
+                      >
+                        <img
+                          class="this-pc__tile-icon"
+                          [src]="folderIconSrc"
+                          alt=""
+                          width="48"
+                          height="48"
+                          draggable="false"
+                        />
+                        <span class="this-pc__tile-label">{{ f.label }}</span>
                       </div>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <p class="this-pc__empty">No items match your search.</p>
-              }
-            </div>
-          }
-        </section>
-      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="this-pc__empty">No items match your search.</p>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Devices and drives -->
+          <section class="this-pc__section" aria-labelledby="this-pc-drives-heading">
+            <button
+              type="button"
+              class="this-pc__section-head"
+              [attr.aria-expanded]="drivesOpen()"
+              aria-controls="this-pc-drives-panel"
+              id="this-pc-drives-heading"
+              (click)="toggleDrives()"
+            >
+              <span
+                class="this-pc__section-chevron"
+                [class.this-pc__section-chevron--open]="drivesOpen()"
+                aria-hidden="true"
+              ></span>
+              <span class="this-pc__section-title"
+                >Devices and drives ({{ drivesSectionCount() }})</span
+              >
+            </button>
+            @if (drivesOpen()) {
+              <div id="this-pc-drives-panel" class="this-pc__section-body">
+                @if (filteredDrives().length > 0) {
+                  <div class="this-pc__grid this-pc__grid--drives" role="list">
+                    @for (d of filteredDrives(); track d.id) {
+                      <div
+                        class="this-pc__tile this-pc__tile--drive"
+                        role="listitem"
+                        (dblclick)="onDriveTileDblClick(d, $event)"
+                      >
+                        <img
+                          class="this-pc__tile-icon this-pc__tile-icon--drive"
+                          [src]="d.iconSrc ?? folderIconSrc"
+                          alt=""
+                          width="48"
+                          height="48"
+                          draggable="false"
+                        />
+                        <div class="this-pc__drive-meta">
+                          <div class="this-pc__drive-name">{{ d.label }}</div>
+                          <div
+                            class="this-pc__drive-bar"
+                            [class.this-pc__drive-bar--critical]="d.barVariant === 'critical'"
+                            [class.this-pc__drive-bar--ok]="d.barVariant === 'ok'"
+                            role="presentation"
+                          >
+                            <div
+                              class="this-pc__drive-bar-fill"
+                              [style.width.%]="usedPercent(d)"
+                            ></div>
+                          </div>
+                          <div class="this-pc__drive-sub">{{ formatDriveSubtitle(d) }}</div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="this-pc__empty">No items match your search.</p>
+                }
+              </div>
+            }
+          </section>
+        </div>
+        }
+      }
     </div>
   </div>
 </div>

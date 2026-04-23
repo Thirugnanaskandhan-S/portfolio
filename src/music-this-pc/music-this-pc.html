@@ -1,0 +1,13 @@
+<div class="explorer-this-pc-pane" role="region" aria-label="Music library">
+  <div
+    class="explorer-this-pc-pane__scroll"
+    [class.explorer-this-pc-pane__scroll--refresh-flash]="listRefreshFlash()"
+  >
+    <app-explorer-details-table
+      ariaLabel="Music"
+      [rows]="rows"
+      [refreshFlash]="listRefreshFlash()"
+      emptyMessage="No music in this library."
+    />
+  </div>
+</div>

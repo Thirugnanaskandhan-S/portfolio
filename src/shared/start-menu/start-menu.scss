@@ -1,0 +1,176 @@
+/* Sits above app windows; taskbar is z-index 1000 in this project. */
+$taskbar-h: 40px;
+$z-backdrop: 1090;
+$z-panel: 1100;
+
+:host {
+  display: contents;
+}
+
+.start-menu-backdrop {
+  position: fixed;
+  z-index: $z-backdrop;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: $taskbar-h;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.start-menu-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.start-menu-panel {
+  position: fixed;
+  z-index: $z-panel;
+  left: 4px;
+  bottom: $taskbar-h;
+  width: min(420px, calc(100vw - 12px));
+  max-height: min(560px, calc(100vh - #{$taskbar-h} - 8px));
+  transform: translateY(calc(100% + 12px));
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.16s ease,
+    visibility 0s linear 0.26s;
+  pointer-events: none;
+}
+
+.start-menu-panel--open {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+  pointer-events: auto;
+}
+
+.start-menu-panel__inner {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%;
+  min-height: 0;
+  max-height: inherit;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #252525;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.18),
+    0 0 1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.start-menu-sidebar {
+  flex: 0 0 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 6px;
+  box-sizing: border-box;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: #202020;
+}
+
+.start-menu-sidebar__top,
+.start-menu-sidebar__bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.start-menu-sidebar__slot {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.start-menu-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.start-menu-main__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 12px 12px 10px;
+}
+
+.start-menu-section {
+  margin-bottom: 14px;
+}
+
+.start-menu-section:last-child {
+  margin-bottom: 0;
+}
+
+.start-menu-section__heading {
+  margin: 0 0 6px 4px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #60cdff;
+  letter-spacing: 0.02em;
+}
+
+.start-menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.start-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #f3f3f3;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: left;
+  cursor: default;
+  box-sizing: border-box;
+}
+
+.start-menu-row:hover,
+.start-menu-row:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.start-menu-row:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: -2px;
+}
+
+.start-menu-row__icon {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.start-menu-row__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}

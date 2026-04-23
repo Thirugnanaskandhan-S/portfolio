@@ -1,0 +1,54 @@
+<div class="start-menu-root" [attr.aria-hidden]="!open()">
+  <div
+    class="start-menu-backdrop"
+    [class.start-menu-backdrop--visible]="open()"
+    (click)="onBackdropClick()"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    class="start-menu-panel"
+    [class.start-menu-panel--open]="open()"
+    role="dialog"
+    [attr.aria-modal]="open() ? true : null"
+    [attr.aria-hidden]="!open()"
+    aria-label="Start"
+  >
+    <div class="start-menu-panel__inner">
+      <aside class="start-menu-sidebar" aria-label="Quick actions">
+        <div class="start-menu-sidebar__top">
+          @for (i of [0, 1, 2]; track i) {
+            <div class="start-menu-sidebar__slot" aria-hidden="true"></div>
+          }
+        </div>
+        <div class="start-menu-sidebar__bottom">
+          @for (i of [0, 1]; track i) {
+            <div class="start-menu-sidebar__slot" aria-hidden="true"></div>
+          }
+        </div>
+      </aside>
+
+      <div class="start-menu-main">
+        <div class="start-menu-main__scroll">
+          @for (g of groups; track g.letter) {
+            <section class="start-menu-section" [attr.aria-labelledby]="'start-menu-h-' + g.letter">
+              <h2 class="start-menu-section__heading" [id]="'start-menu-h-' + g.letter">
+                {{ g.letter }}
+              </h2>
+              <ul class="start-menu-list" role="list">
+                @for (label of g.labels; track label) {
+                  <li class="start-menu-list__item" role="listitem">
+                    <button type="button" class="start-menu-row">
+                      <span class="start-menu-row__icon" aria-hidden="true"></span>
+                      <span class="start-menu-row__label">{{ label }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

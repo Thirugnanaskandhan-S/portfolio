@@ -1,0 +1,13 @@
+<div class="explorer-this-pc-pane" role="region" aria-label="Local Disk C">
+  <div
+    class="explorer-this-pc-pane__scroll"
+    [class.explorer-this-pc-pane__scroll--refresh-flash]="listRefreshFlash()"
+  >
+    <app-explorer-details-table
+      ariaLabel="Local Disk (C:)"
+      [rows]="rows"
+      [refreshFlash]="listRefreshFlash()"
+      emptyMessage="This drive is empty."
+    />
+  </div>
+</div>

@@ -34,6 +34,9 @@ export class Taskbar {
   /** Emits the task {@link TaskbarTaskItem.id} when its button is activated. */
   taskActivate = output<string>();
 
+  /** Start button pressed — host toggles the Start menu. */
+  startActivate = output<void>();
+
   /** Night wallpaper on + viewport origin of toggle for radial reveal. */
   darkModeChange = output<DarkModeChangeDetail>();
 
@@ -65,6 +68,10 @@ export class Taskbar {
     const now = new Date();
     this.clockTime.set(this.#timeFmt.format(now));
     this.clockDate.set(this.#dateFmt.format(now).replace(/\//g, '-'));
+  }
+
+  protected onStartClick(): void {
+    this.startActivate.emit();
   }
 
   onThemeToggle(event: Event): void {
