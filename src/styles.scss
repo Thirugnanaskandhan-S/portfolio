@@ -46,6 +46,27 @@ app-root {
   font-family: inherit;
 }
 
+/* On touch devices in portrait, present the app in landscape orientation. */
+@media (orientation: portrait) and (pointer: coarse) and (max-width: 1024px) {
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  app-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100dvh;
+    height: 100dvw;
+    min-height: 100dvw;
+    transform-origin: top left;
+    transform: rotate(90deg) translateY(-100%);
+  }
+}
+
 button,
 input,
 select,

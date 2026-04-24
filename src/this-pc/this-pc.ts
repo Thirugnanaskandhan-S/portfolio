@@ -4,6 +4,7 @@ import { CDriveThisPc } from '../c-drive-this-pc/c-drive-this-pc';
 import { DesktopThisPc } from '../desktop-this-pc/desktop-this-pc';
 import { DocumentsThisPc } from '../documents-this-pc/documents-this-pc';
 import { MusicThisPc } from '../music-this-pc/music-this-pc';
+import { MyProjectsThisPc } from '../my-projects-this-pc/my-projects-this-pc';
 import { PicturesThisPc } from '../pictures-this-pc/pictures-this-pc';
 import { VideosThisPc } from '../videos-this-pc/videos-this-pc';
 import { type DesktopIconVariant } from '../shared/desktop-icon/desktop-icon';
@@ -86,6 +87,7 @@ const THIS_PC_NAV_NODES: readonly ExplorerNavNode[] = [
     DocumentsThisPc,
     ExplorerNavPane,
     MusicThisPc,
+    MyProjectsThisPc,
     PicturesThisPc,
     VideosThisPc,
   ],
@@ -110,6 +112,8 @@ export class ThisPc {
 
   /** Double-click a shortcut inside the in-window Desktop folder. */
   desktopShortcutOpen = output<{ id: DesktopIconVariant }>();
+  /** Double-click a PDF inside the in-window My Projects folder. */
+  myProjectsPdfOpen = output<{ id: string }>();
 
   protected readonly navNodes = THIS_PC_NAV_NODES;
   protected readonly thisPcNavExpanded = signal(true);
@@ -125,6 +129,11 @@ export class ThisPc {
   constructor() {
     effect(() => {
       const cur = this.mainView();
+      if (cur === 'my-projects') {
+        this.selectedNavId.set('desktop');
+      } else if (cur !== 'root') {
+        this.selectedNavId.set(cur);
+      }
       if (this.#prevMainView !== 'root' && cur === 'root') {
         this.selectedNavId.set('this-pc');
       }

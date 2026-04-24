@@ -72,13 +72,14 @@
         (folderEnter)="onThisPcFolderEnter($event)"
         (navigateToRoot)="onThisPcNavigateToRoot()"
         (desktopShortcutOpen)="onThisPcDesktopShortcut($event)"
+        (myProjectsPdfOpen)="onMyProjectsPdfOpen($event)"
       />
     </app-os-window>
   }
   @if (resumeWindow().open && !resumeWindow().minimized) {
     <app-os-window
       [title]="pdfViewerTitle"
-      [src]="resumePdfSrc"
+      [src]="pdfViewerSrc()"
       [maximized]="resumeWindow().maximized"
       (windowClose)="closeResumeWindow()"
       (windowMinimize)="minimizeResumeWindow()"

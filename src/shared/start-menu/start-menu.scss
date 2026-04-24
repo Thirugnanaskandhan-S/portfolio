@@ -166,8 +166,7 @@ $z-panel: 1100;
   flex: 0 0 24px;
   width: 24px;
   height: 24px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.16);
+  object-fit: contain;
 }
 
 .start-menu-row__label {

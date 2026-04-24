@@ -28,6 +28,10 @@ import {
 import { ThisPc } from '../this-pc/this-pc';
 
 const RESUME_PDF_SRC = 'assets/Resume.pdf';
+const INTEGRATOR_ENTERPRISE_MIDDLEWARE_PDF_SRC = 'assets/Integrator - Enterprise Middleware Tool.pdf';
+const CACTUS_PDF_SRC = 'assets/Cactus.pdf';
+const RECONCILIATION_PDF_SRC = 'assets/Reconciliation.pdf';
+const SUPERLABELS_PDF_SRC = 'assets/Superlabels.pdf';
 
 /** Relative to `<base href>` — must match `index.html` / taskbar theme. */
 const DESKTOP_WALLPAPER_DAY = 'url(assets/windows-xp-day.png)';
@@ -128,7 +132,7 @@ export class Desktop implements OnDestroy {
     maximized: boolean;
   }>({ open: false, minimized: false, maximized: false });
 
-  protected readonly resumePdfSrc = RESUME_PDF_SRC;
+  protected readonly pdfViewerSrc = signal(RESUME_PDF_SRC);
 
   protected readonly pdfViewerTitle = PDF_VIEWER_TITLE;
 
@@ -432,7 +436,17 @@ export class Desktop implements OnDestroy {
       }));
       return;
     }
+    if (v === 'my-projects') {
+      this.thisPcMainView.set('my-projects');
+      this.thisPcWindow.update((s) => ({
+        open: true,
+        minimized: false,
+        maximized: s.maximized,
+      }));
+      return;
+    }
     if (v === 'resume') {
+      this.pdfViewerSrc.set(RESUME_PDF_SRC);
       this.resumeWindow.update((s) => ({
         open: true,
         minimized: false,
@@ -473,13 +487,37 @@ export class Desktop implements OnDestroy {
       this.thisPcMainView.set('root');
       return;
     }
+    if (detail.id === 'my-projects') {
+      this.thisPcMainView.set('my-projects');
+      return;
+    }
     if (detail.id === 'resume') {
+      this.pdfViewerSrc.set(RESUME_PDF_SRC);
       this.resumeWindow.update((s) => ({
         open: true,
         minimized: false,
         maximized: s.maximized,
       }));
     }
+  }
+
+  protected onMyProjectsPdfOpen(detail: { id: string }): void {
+    if (detail.id === 'integrator-enterprise-middleware') {
+      this.pdfViewerSrc.set(INTEGRATOR_ENTERPRISE_MIDDLEWARE_PDF_SRC);
+    } else if (detail.id === 'cactus-ai-powered-knowledge-assistant') {
+      this.pdfViewerSrc.set(CACTUS_PDF_SRC);
+    } else if (detail.id === 'banking-reconciliation-tool') {
+      this.pdfViewerSrc.set(RECONCILIATION_PDF_SRC);
+    } else if (detail.id === 'superlabels-employee-travel-fuel-expense-tracking-android') {
+      this.pdfViewerSrc.set(SUPERLABELS_PDF_SRC);
+    } else {
+      return;
+    }
+    this.resumeWindow.update((s) => ({
+      open: true,
+      minimized: false,
+      maximized: s.maximized,
+    }));
   }
 
   protected closeThisPcWindow(): void {

@@ -2,6 +2,7 @@
 export type ThisPcMainView =
   | 'root'
   | 'desktop'
+  | 'my-projects'
   | 'documents'
   | 'pictures'
   | 'music'
@@ -10,6 +11,7 @@ export type ThisPcMainView =
 
 const SUBVIEWS = new Set<Exclude<ThisPcMainView, 'root'>>([
   'desktop',
+  'my-projects',
   'documents',
   'pictures',
   'music',
@@ -27,6 +29,7 @@ export const THIS_PC_C_DRIVE_WINDOW_LABEL = "Thiru's Brain Capacity (C:)";
 /** Address field text when not on the This PC home page. */
 export const THIS_PC_MAIN_VIEW_ADDRESS: Record<Exclude<ThisPcMainView, 'root'>, string> = {
   desktop: 'Desktop',
+  'my-projects': 'My Projects',
   documents: 'Documents',
   pictures: 'Pictures',
   music: 'Music',

@@ -1,24 +1,22 @@
 import { Component, input, output } from '@angular/core';
 
-/** One alphabetical group in the “All apps” list (icon column is empty until assets are added). */
-export interface StartMenuAppGroup {
-  readonly letter: string;
-  readonly labels: readonly string[];
+interface StartMenuApp {
+  readonly id: string;
+  readonly label: string;
+  readonly iconSrc: string;
 }
 
-const DEFAULT_GROUPS: readonly StartMenuAppGroup[] = [
+const DEFAULT_APPS: readonly StartMenuApp[] = [
+  { id: 'this-pc', label: 'This PC', iconSrc: 'assets/this-pc.png' },
+  { id: 'resume', label: 'Resume', iconSrc: 'assets/pdf.svg' },
+  { id: 'integrator', label: 'Integrator', iconSrc: 'assets/pdf.svg' },
+  { id: 'cactus', label: 'Cactus', iconSrc: 'assets/pdf.svg' },
   {
-    letter: 'C',
-    labels: ['Calculator', 'Calendar', 'Camera', 'Cheat Engine', 'Chrome Apps'],
+    id: 'banking-reconciliation-tool',
+    label: 'Banking Reconciliation Tool',
+    iconSrc: 'assets/pdf.svg',
   },
-  {
-    letter: 'D',
-    labels: ['Docker Desktop', 'DuckDuckGo'],
-  },
-  {
-    letter: 'M',
-    labels: ['Mail', 'Maps', 'Microsoft Edge', 'Movies & TV'],
-  },
+  { id: 'superlabels', label: 'Superlabels', iconSrc: 'assets/pdf.svg' },
 ];
 
 /**
@@ -38,7 +36,7 @@ export class StartMenu {
   /** User dismissed via backdrop (or host may close on the same Start click). */
   close = output<void>();
 
-  protected readonly groups = DEFAULT_GROUPS;
+  protected readonly apps = DEFAULT_APPS;
 
   protected onBackdropClick(): void {
     this.close.emit();

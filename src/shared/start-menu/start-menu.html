@@ -30,23 +30,18 @@
 
       <div class="start-menu-main">
         <div class="start-menu-main__scroll">
-          @for (g of groups; track g.letter) {
-            <section class="start-menu-section" [attr.aria-labelledby]="'start-menu-h-' + g.letter">
-              <h2 class="start-menu-section__heading" [id]="'start-menu-h-' + g.letter">
-                {{ g.letter }}
-              </h2>
-              <ul class="start-menu-list" role="list">
-                @for (label of g.labels; track label) {
-                  <li class="start-menu-list__item" role="listitem">
-                    <button type="button" class="start-menu-row">
-                      <span class="start-menu-row__icon" aria-hidden="true"></span>
-                      <span class="start-menu-row__label">{{ label }}</span>
-                    </button>
-                  </li>
-                }
-              </ul>
-            </section>
-          }
+          <section class="start-menu-section" aria-label="Pinned apps">
+            <ul class="start-menu-list" role="list">
+              @for (app of apps; track app.id) {
+                <li class="start-menu-list__item" role="listitem">
+                  <button type="button" class="start-menu-row">
+                    <img class="start-menu-row__icon" [src]="app.iconSrc" alt="" aria-hidden="true" />
+                    <span class="start-menu-row__label">{{ app.label }}</span>
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
         </div>
       </div>
     </div>

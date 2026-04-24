@@ -1,0 +1,14 @@
+<div class="explorer-this-pc-pane" role="region" aria-label="My Projects folder">
+  <div
+    class="explorer-this-pc-pane__scroll"
+    [class.explorer-this-pc-pane__scroll--refresh-flash]="listRefreshFlash()"
+  >
+    <app-explorer-details-table
+      ariaLabel="My Projects"
+      [rows]="rows"
+      [refreshFlash]="listRefreshFlash()"
+      emptyMessage="This folder is empty."
+      (rowDoubleClick)="onRowDoubleClick($event)"
+    />
+  </div>
+</div>

@@ -20,6 +20,12 @@
             (shortcutOpen)="desktopShortcutOpen.emit($event)"
           />
         }
+        @case ('my-projects') {
+          <app-my-projects-this-pc
+            [listRefreshFlash]="listRefreshFlash()"
+            (pdfOpen)="myProjectsPdfOpen.emit($event)"
+          />
+        }
         @case ('documents') {
           <app-documents-this-pc [listRefreshFlash]="listRefreshFlash()" />
         }
