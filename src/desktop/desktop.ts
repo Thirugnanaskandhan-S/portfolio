@@ -213,6 +213,14 @@ export class Desktop implements OnDestroy {
 
   private resizeObserver: ResizeObserver | null = null;
 
+  private isMobileTabletView(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    return (
+      window.matchMedia('(pointer: coarse)').matches &&
+      window.matchMedia('(max-width: 1024px)').matches
+    );
+  }
+
   constructor() {
     if (!isPlatformBrowser(this.platformId)) return;
     afterNextRender(() => {
@@ -348,6 +356,7 @@ export class Desktop implements OnDestroy {
 
   /** Empty desktop-icons area: rubber-band selection. */
   protected onDesktopIconsPointerDown(event: PointerEvent): void {
+    if (this.isMobileTabletView()) return;
     if (event.button !== 0) return;
     if (!isPlatformBrowser(this.platformId)) return;
     const el = event.target as Element | null;
@@ -636,6 +645,7 @@ export class Desktop implements OnDestroy {
   }
 
   onIconPointerDown(variant: DesktopIconVariant, event: PointerEvent): void {
+    if (this.isMobileTabletView()) return;
     if (event.button !== 0) return;
     event.stopPropagation();
 

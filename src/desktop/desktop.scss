@@ -67,6 +67,9 @@
   .desktop-surface {
     height: 100dvh;
     overflow: auto;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
@@ -75,6 +78,15 @@
     width: 0;
     height: 0;
     display: none;
+  }
+
+  .desktop-icons {
+    min-width: max(100%, 1200px);
+    min-height: max(calc(100dvh - 48px - 16px), 720px);
+  }
+
+  .desktop-icon-slot {
+    touch-action: pan-x pan-y;
   }
 }
 
