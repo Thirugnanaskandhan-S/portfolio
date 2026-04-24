@@ -62,6 +62,22 @@
   min-height: calc(100vh - 48px - 16px);
 }
 
+/* Mobile/tablet: allow desktop area scroll, keep scrollbar hidden. */
+@media (pointer: coarse) and (max-width: 1024px) {
+  .desktop-surface {
+    height: 100dvh;
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .desktop-surface::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+
 .desktop-marquee {
   position: absolute;
   z-index: 3;
